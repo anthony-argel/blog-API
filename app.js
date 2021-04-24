@@ -54,9 +54,6 @@ passport.use(new JWTStrategy({
 ));
 
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-
 const bcrypt = require('bcrypt');
 
 
@@ -83,8 +80,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 
 app.post('/login', [
   body('username').trim().escape(), 
