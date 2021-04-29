@@ -33,7 +33,14 @@ router.delete('/:id', (req, res, next) => {
 })
 
 router.put('/:id', (req, res, next) => {
-  Post.findByIdAndUpdate(req.params.id, {title: req.body.title, post: req.body.post}, (err, result) => {
+  const updateData = {};
+  if(req.body.post !== '') {
+    updateData.post = req.body.post;
+  }
+  if(req.body.title !== '') {
+    updateData.title = req.body.title;
+  }
+  Post.findByIdAndUpdate(req.params.id, updateData, (err, result) => {
     if(err) {return next(err)}
     else {
       res.status(200).json({message:'success'})
@@ -48,10 +55,4 @@ router.delete('/:id/comment/:commentid', (req, res, next) => {
     res.status(200).json({message:'successfully deleted the post'});
   })
 })
-
-router.get('/test', (req, res, next) => {
-  res.json({message:"got in"});
-})
-
-
 module.exports = router;
