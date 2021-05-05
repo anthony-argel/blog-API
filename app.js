@@ -6,7 +6,6 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const {body, validationResult} = require('express-validator');
 const jwt = require("jsonwebtoken");
-const protectedRoute = require('./routes/protected');
 const blogRoute = require('./routes/blog');
 const User = require('./models/user');
 const Post = require('./models/post');
@@ -154,8 +153,8 @@ app.post('/blog/:id', [
   }
 ]);
 
-app.get('/test', passport.authenticate('jwt', {session: false}), (req, res, next)=> {
-  res.json('got in');
+app.get('/verify', passport.authenticate('jwt', {session: false}), (req, res, next)=> {
+  res.sendStatus(200);
 })
 
 app.use('/blog', passport.authenticate('jwt', {session: false}), blogRoute);
