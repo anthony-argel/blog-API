@@ -170,12 +170,12 @@ app.post('/tag',passport.authenticate('jwt', {session: false}), (req, res) => {
   })
 })
 
-app.get('/tag/:id/channels', (req, res) => {
+app.get('/tag/:id/posts', (req, res) => {
   Post
   .find({'tags.tagid':req.params.id})
   .exec((err, results) => {
     if(err){return res.sendStatus(400);}
-    res.status(200).json({channels:results});
+    res.status(200).json({posts:results});
   })
 })
 
