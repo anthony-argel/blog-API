@@ -4,7 +4,9 @@ const {body, validationResult} = require('express-validator');
 const Post = require('../models/post');
 const Comment = require('../models/comment');
 const {DateTime} = require('luxon');
+const Tag = require('../models/tag');
 
+// blog posts
 router.post('/', (req, res, next) => {
     const newPost = new Post({
       title: req.body.title,
@@ -16,6 +18,7 @@ router.post('/', (req, res, next) => {
       res.json({message:'posted!'});
     });
 });
+
 
 router.delete('/:id', (req, res, next) => {
   Comment.deleteMany({postid: req.params.id}).exec((err, result) => {
@@ -48,7 +51,38 @@ router.put('/:id', (req, res, next) => {
   })
 })
 
+// tags
+router.post('/:id/tag', (req, res, next) => {
+  Tag.findById(req.body.tagid).exec((err, result) => {
+    if(err) {return res.sendStatus(400);}
+    Post.findOneAndUpdate({_id: req.params.id}, {
+      $addToSet: {
+        tags: {tagid: req.body.tagid, tagname: result.name, _id: req.body.tagid}
+      }
+    })
+    .exec((err) => {
+      if(err) {return res.sendStatus(400);}
+      res.sendStatus(200);
+    })
+  });
+});
 
+router.delete('/:id/tag', (req, res, next) => {
+  Tag.findById(req.body.tagid).exec((err, result) => {
+    if(err) {return res.sendStatus(400);}
+    Post.findOneAndUpdate({_id: req.params.id}, {
+      $pull: {
+        tags: {tagid: req.body.tagid}
+      }
+    })
+    .exec((err) => {
+      if(err) {return res.sendStatus(400);}
+      res.sendStatus(200);
+    })
+  });
+});
+
+// comments
 router.delete('/:id/comment/:commentid', (req, res, next) => {
   Comment.findByIdAndDelete({_id: req.params.commentid}).exec((err, result) => {
     if(err) {return next(err);}

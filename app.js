@@ -109,18 +109,17 @@ app.post('/login', [
   }
 ]);
 
-/* GET users listing. */
 app.get('/blog', function(req, res, next) {
-  Post.find().exec((err, results) => {
+  Post.find().populate({path:'tags', populate:{path:'tags'}}).exec((err, results) => {
     if(err) {return next(err);}
     res.json(results)
   })
 });
 
 
-/* GET user profile. */
+// get blog and comments
 app.get('/blog/:id', function(req, res, next) {
-    Post.find({_id:req.params.id}).exec((err, result) => {
+    Post.find({_id:req.params.id}).populate({path:'tags', populate:{path:'tags'}}).exec((err, result) => {
       if(err) {return next(err);}
       res.json(result);
     });
@@ -133,6 +132,7 @@ app.get('/blog/:id/comments', function(req, res, next) {
   });
 });
 
+// add comment
 app.post('/blog/:id', [
   body('comment').trim().isLength({min:1}).escape(),
   (req, res, next) => {
@@ -152,6 +152,23 @@ app.post('/blog/:id', [
     }
   }
 ]);
+
+const Tag = require('./models/tag');
+app.get('/tags', (req, res, next) => {
+  Tag.find().exec((err, results) => {
+    if(err) {return res.sendStatus(400);}
+    res.status(200).json({tags: results});
+  });
+})
+
+// add tag
+app.post('/tag',passport.authenticate('jwt', {session: false}), (req, res) => {
+  const newTag = new Tag({name: req.body.name});
+  newTag.save((err) => {
+    if(err) {return res.sendStatus(400)}
+    res.sendStatus(200);
+  })
+})
 
 app.get('/verify', passport.authenticate('jwt', {session: false}), (req, res, next)=> {
   res.sendStatus(200);
