@@ -110,7 +110,7 @@ app.post('/login', [
 ]);
 
 app.get('/blog', function(req, res, next) {
-  Post.find().populate({path:'tags', populate:{path:'tags'}}).exec((err, results) => {
+  Post.find().exec((err, results) => {
     if(err) {return next(err);}
     res.json(results)
   })
@@ -119,7 +119,7 @@ app.get('/blog', function(req, res, next) {
 
 // get blog and comments
 app.get('/blog/:id', function(req, res, next) {
-    Post.find({_id:req.params.id}).populate({path:'tags', populate:{path:'tags'}}).exec((err, result) => {
+    Post.find({_id:req.params.id}).exec((err, result) => {
       if(err) {return next(err);}
       res.json(result);
     });
@@ -169,6 +169,16 @@ app.post('/tag',passport.authenticate('jwt', {session: false}), (req, res) => {
     res.sendStatus(200);
   })
 })
+
+app.get('/search', (req, res, next) => {
+  Post
+  .find({$text: {$search: req.query.query, $caseSensitive: false}})
+  .sort({score: {$meta: 'textScore'}})
+  .exec((err, results) => {
+    if(err) {return res.send(err)}
+    res.status(200).json({results})
+  })
+});
 
 app.get('/verify', passport.authenticate('jwt', {session: false}), (req, res, next)=> {
   res.sendStatus(200);
