@@ -163,10 +163,14 @@ app.get('/tags', (req, res, next) => {
 
 // add tag
 app.post('/tag',passport.authenticate('jwt', {session: false}), (req, res) => {
-  const newTag = new Tag({name: req.body.name});
-  newTag.save((err) => {
-    if(err) {return res.sendStatus(400)}
-    res.sendStatus(200);
+  Tag.find({name:req.body.name}).exec((err, result) => {
+    if(err) {return res.sendStatus(400);}
+    if(result.length > 0) {return res.sendStatus(200)}
+    const newTag = new Tag({name: req.body.name});
+    newTag.save((err) => {
+      if(err) {return res.sendStatus(400)}
+      res.sendStatus(200);
+    })
   })
 })
 

@@ -55,6 +55,7 @@ router.put('/:id', (req, res, next) => {
 router.post('/:id/tag', (req, res, next) => {
   Tag.findById(req.body.tagid).exec((err, result) => {
     if(err) {return res.sendStatus(400);}
+    if(result.length === 0) {return res.sendStatus(400)}
     Post.findOneAndUpdate({_id: req.params.id}, {
       $addToSet: {
         tags: {tagid: req.body.tagid, tagname: result.name, _id: req.body.tagid}
