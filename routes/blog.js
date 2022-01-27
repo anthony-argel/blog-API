@@ -12,13 +12,39 @@ router.post('/', (req, res, next) => {
       title: req.body.title,
       post: req.body.post,
       postdate: DateTime.now(),
-      visible:true
+      visible:false
     }).save((err, result) => {
       if(err) {return next(err);}
       res.json({message:'posted!'});
     });
 });
 
+router.get('/admin/posts', (req, res, next) => {
+  Post.find().exec((err, result) => {
+    if(err) {return next(err)}
+    res.json(result);
+  })
+})
+
+router.get('/admin/post/:id', (req,res,next)=>{
+  Post.find({_id:req.params.id}).exec((err,result)=> {
+    if(err) {return next(err);}
+    if(result.length > 0) {
+      res.json(result);
+    } else {
+      res.status(404);
+    }
+  })
+});
+
+router.put('/visibility/:id', (req, res, next) => {
+  Post.findByIdAndUpdate({_id: req.params.id}, {visible: req.body.visible}, (err, result) => {
+    if(err) {return next(err)}
+    else {
+      res.sendStatus(200);
+    }
+  })
+});
 
 router.delete('/:id', (req, res, next) => {
   Comment.deleteMany({postid: req.params.id}).exec((err, result) => {
@@ -43,13 +69,14 @@ router.put('/:id', (req, res, next) => {
   if(req.body.title !== '') {
     updateData.title = req.body.title;
   }
+  updateData.visible = req.body.visible;
   Post.findByIdAndUpdate(req.params.id, updateData, (err, result) => {
     if(err) {return next(err)}
     else {
       res.status(200).json({message:'success'})
     }
   })
-})
+});
 
 // tags
 router.post('/:id/tag', (req, res, next) => {

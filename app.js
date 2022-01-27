@@ -110,21 +110,21 @@ app.post('/login', [
 ]);
 
 app.get('/blog', function(req, res, next) {
-  Post.find().exec((err, results) => {
+  Post.find({visible:true}).exec((err, results) => {
     if(err) {return next(err);}
     res.json(results)
   })
 });
 
-
 // get blog and comments
 app.get('/blog/:id', function(req, res, next) {
-    Post.find({_id:req.params.id}).exec((err, result) => {
+    Post.find({_id:req.params.id, visible:true}).exec((err, result) => {
       if(err) {return next(err);}
       res.json(result);
     });
 });
 
+//potential issue, if someone somehow manages to guess the post ID, they will not see the post be may potentially get the comments
 app.get('/blog/:id/comments', function(req, res, next) {
   Comment.find({postid:req.params.id}).exec((err, result) => {
     if(err) {return next(err);}
@@ -133,6 +133,7 @@ app.get('/blog/:id/comments', function(req, res, next) {
 });
 
 // add comment
+// potential issue, if someone wanted to write comments on blog posts that do not exist, they can.
 app.post('/blog/:id', [
   body('comment').trim().isLength({min:1}).escape(),
   (req, res, next) => {
@@ -176,7 +177,7 @@ app.post('/tag',passport.authenticate('jwt', {session: false}), (req, res) => {
 
 app.get('/tag/:id/posts', (req, res) => {
   Post
-  .find({'tags.tagid':req.params.id})
+  .find({'tags.tagid':req.params.id, visible:true})
   .exec((err, results) => {
     if(err){return res.sendStatus(400);}
     res.status(200).json({posts:results});
@@ -185,7 +186,7 @@ app.get('/tag/:id/posts', (req, res) => {
 
 app.get('/search', (req, res, next) => {
   Post
-  .find({$text: {$search: req.query.query, $caseSensitive: false}})
+  .find({$text: {$search: req.query.query, $caseSensitive: false}, visible:true})
   .sort({score: {$meta: 'textScore'}})
   .exec((err, results) => {
     if(err) {return res.send(err)}
